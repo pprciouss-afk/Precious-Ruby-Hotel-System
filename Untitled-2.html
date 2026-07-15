@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Precious Ruby Hotel - Online Booking</title>
+    <style>
+        :root {
+            --primary-color: #8b0000; /* Ruby Red */
+            --secondary-color: #d4af37; /* Gold */
+            --bg-color: #fdf5e6; /* Old Lace */
+            --text-color: #333;
+            --white: #ffffff;
+            --shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding-bottom: 50px;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 2rem 1rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            font-size: 1rem;
+            opacity: 0.9;
+            font-style: italic;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Floor Navigation */
+        .floor-nav {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+        }
+
+        .floor-btn {
+            padding: 1rem 2rem;
+            border: 2px solid var(--primary-color);
+            background: var(--white);
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            border-radius: 50px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-width: 140px;
+        }
+
+        .floor-btn.active {
+            background: var(--primary-color);
+            color: var(--white);
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(139, 0, 0, 0.3);
+        }
+
+        /* Room Grid */
+        .room-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2.5rem;
+        }
+
+        .room-card {
+            background: var(--white);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: none;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .room-card.active {
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .room-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.2);
+        }
+
+        .room-img-container {
+            position: relative;
+            width: 100%;
+            height: 240px;
+            overflow: hidden;
+        }
+
+        .room-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .room-card:hover .room-img {
+            transform: scale(1.1);
+        }
+
+        .room-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--secondary-color);
+            color: #000;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .room-info {
+            padding: 1.8rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .room-type {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 0.8rem;
+        }
+
+        .room-desc {
+            font-size: 0.95rem;
+            color: #555;
+            margin-bottom: 1.2rem;
+            min-height: 3em;
+        }
+
+        .room-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #777;
+            margin-bottom: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+
+        .room-price {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #222;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: baseline;
+            gap: 5px;
+        }
+
+        .room-price span {
+            font-size: 0.9rem;
+            color: #888;
+            font-weight: normal;
+        }
+
+        .book-btn {
+            width: 100%;
+            padding: 1.2rem;
+            background: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(139, 0, 0, 0.2);
+            margin-top: auto;
+        }
+
+        .book-btn:active {
+            transform: scale(0.98);
+        }
+
+        .book-btn:disabled {
+            background: #bbb;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Modal / Booking Form */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: var(--white);
+            padding: 2.5rem;
+            border-radius: 25px;
+            max-width: 650px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.3s;
+        }
+
+        .close-modal:hover {
+            color: var(--primary-color);
+        }
+
+        .form-group {
+            margin-bottom: 1.8rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.6rem;
+            font-weight: 700;
+            color: #444;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .add-ons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            background: #fdfaf0;
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid #f0e0b0;
+        }
+
+        .add-on-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        .add-on-item input {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary-color);
+        }
+
+        /* Summary Page */
+        .summary-card {
+            background: #fff;
+            padding: 2rem;
+            border: 2px dashed var(--secondary-color);
+            border-radius: 15px;
+            margin-top: 1.5rem;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+            font-size: 1.05rem;
+        }
+
+        .summary-item span:first-child {
+            color: #777;
+        }
+
+        .total-price {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            text-align: right;
+            margin-top: 1.5rem;
+            border-top: 2px solid #f0f0f0;
+            padding-top: 1.5rem;
+        }
+
+        /* Payment Section */
+        .payment-options {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .pay-btn {
+            flex: 1;
+            padding: 1.5rem 1rem;
+            border: 2px solid #eee;
+            background: var(--white);
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: 700;
+            text-align: center;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pay-btn:hover {
+            border-color: var(--primary-color);
+            background: #fff5f5;
+        }
+
+        .pay-btn.selected {
+            border-color: var(--primary-color);
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 8px 15px rgba(139, 0, 0, 0.2);
+        }
+
+        .payment-details {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: #fff9e6;
+            border-radius: 15px;
+            border-left: 5px solid var(--secondary-color);
+            display: none;
+            animation: slideDown 0.4s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .success-screen {
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+
+        .success-icon {
+            font-size: 5rem;
+            color: #27ae60;
+            margin-bottom: 1.5rem;
+            background: #e8f5e9;
+            width: 120px;
+            height: 120px;
+            line-height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 1.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header h1 { font-size: 1.8rem; }
+            .room-grid { grid-template-columns: 1fr; }
+            .add-ons { grid-template-columns: 1fr; }
+            .payment-options { flex-direction: column; }
+            .modal-content { padding: 1.5rem; border-radius: 0; height: 100%; max-height: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>PRECIOUS RUBY HOTEL</h1>
+    <p>Mangagoy, Bislig City, Philippines • Simple Filipino Comfort</p>
+</header>
+
+<div class="container">
+    <!-- Floor Selection -->
+    <div class="floor-nav">
+        <button class="floor-btn active" onclick="showFloor(1)">1st Floor</button>
+        <button class="floor-btn" onclick="showFloor(2)">2nd Floor</button>
+        <button class="floor-btn" onclick="showFloor(3)">3rd Floor</button>
+    </div>
+
+    <!-- Room Grid -->
+    <div class="room-grid" id="roomGrid">
+        <!-- Rooms will be injected by JavaScript -->
+    </div>
+</div>
+
+<!-- Booking Modal -->
+<div class="modal" id="bookingModal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <h2 id="modalTitle" style="color: var(--primary-color); margin-bottom: 0.5rem;">Book Your Room</h2>
+        <p id="modalSubtitle" style="color: #666; margin-bottom: 2rem;">Please fill in your details to proceed.</p>
+        
+        <div id="step1">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="custName" placeholder="Juan Dela Cruz">
+            </div>
+            <div class="form-group">
+                <label>Contact Number</label>
+                <input type="tel" id="custContact" placeholder="09XX XXX XXXX">
+            </div>
+            <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+                <div class="form-group" style="flex: 1; min-width: 200px;">
+                    <label>Check-in Date</label>
+                    <input type="date" id="checkIn">
+                </div>
+                <div class="form-group" style="flex: 1; min-width: 200px;">
+                    <label>Check-out Date</label>
+                    <input type="date" id="checkOut">
+                </div>
+            </div>
+
+            <label style="font-weight: 700; display: block; margin-bottom: 0.8rem; color: #444;">Add-ons (Optional)</label>
+            <div class="add-ons">
+                <label class="add-on-item"><input type="checkbox" class="addon" data-price="50" value="Extra Pillow"> Extra Pillow (₱50)</label>
+                <label class="add-on-item"><input type="checkbox" class="addon" data-price="100" value="Extra Blanket"> Extra Blanket (₱100)</label>
+                <label class="add-on-item"><input type="checkbox" class="addon" data-price="150" value="Extra Mattress"> Extra Mattress (₱150)</label>
+                <label class="add-on-item"><input type="checkbox" class="addon" data-price="300" value="Extra Bed"> Extra Bed (₱300)</label>
+                <label class="add-on-item"><input type="checkbox" class="addon" data-price="250" value="Folding Bed"> Folding Bed (₱250)</label>
+            </div>
+
+            <button class="book-btn" style="margin-top: 2.5rem;" onclick="goToSummary()">Review Booking Summary</button>
+        </div>
+
+        <div id="step2" style="display: none;">
+            <h3 style="margin-bottom: 1rem;">Booking Summary</h3>
+            <div class="summary-card" id="summaryContent">
+                <!-- Summary injected here -->
+            </div>
+            
+            <h3 style="margin-top: 2.5rem; margin-bottom: 1rem;">Select Payment Method</h3>
+            <div class="payment-options">
+                <div class="pay-btn" id="payCash" onclick="selectPayment('cash')">
+                    <span style="font-size: 1.5rem;">💵</span>
+                    <span>Cash Payment</span>
+                </div>
+                <div class="pay-btn" id="payOnline" onclick="selectPayment('online')">
+                    <span style="font-size: 1.5rem;">📱</span>
+                    <span>Online Payment</span>
+                </div>
+            </div>
+
+            <div id="cashDetails" class="payment-details">
+                <p style="margin-bottom: 10px;"><strong>Instruction:</strong></p>
+                <p>Please proceed to the <strong>Front Desk</strong> to settle your bill. Take a screenshot of this summary and show it to our receptionist to confirm your walk-in booking.</p>
+            </div>
+
+            <div id="onlineDetails" class="payment-details">
+                <p style="margin-bottom: 10px;"><strong>Hotel Recipient Details:</strong></p>
+                <p><strong>GCash:</strong> 0917-123-4567 (Precious Ruby Hotel)</p>
+                <p><strong>Maya:</strong> 0917-123-4567</p>
+                <p><strong>BDO Savings:</strong> 00123-456-7890</p>
+                <p style="margin-top: 1rem; font-size: 0.85rem; color: #7a5a00; background: #fff2cc; padding: 10px; border-radius: 8px;">
+                    *Please show your transaction receipt at the front desk upon arrival.
+                </p>
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 2.5rem;">
+                <button class="book-btn" style="background: #eee; color: #666; box-shadow: none;" onclick="backToStep1()">Back</button>
+                <button class="book-btn" onclick="confirmBooking()">Confirm & Finish</button>
+            </div>
+        </div>
+
+        <div id="step3" style="display: none;" class="success-screen">
+            <div class="success-icon">✔</div>
+            <h2 style="color: #27ae60; margin-bottom: 1rem;">Booking Confirmed!</h2>
+            <p id="successMsg" style="font-size: 1.1rem; color: #555; margin-bottom: 2rem;"></p>
+            <div style="background: #f9f9f9; padding: 1.5rem; border-radius: 15px; margin-bottom: 2rem; text-align: left;">
+                <p><strong>Hotel Address:</strong> Mangagoy, Bislig City, Surigao del Sur</p>
+                <p><strong>Contact:</strong> (086) 123-4567 / 0917-123-4567</p>
+            </div>
+            <button class="book-btn" onclick="location.reload()">Return to Home</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Room Data with embedded base64 images
+    const rooms = [
+        // Floor 1
+        { id: 101, floor: 1, type: "Single Standard", price: 850, desc: "Cozy room for solo travelers. Features a comfortable single bed and basic amenities.", capacity: "1 Person", loc: "Near Lobby", available: true, img: "single", badge: "Best Value" },
+        { id: 102, floor: 1, type: "Couple's Nest", price: 1350, desc: "Romantic space with a queen-sized bed, perfect for couples visiting Bislig.", capacity: "2 Persons", loc: "Garden View", available: true, img: "couple", badge: "Popular" },
+        { id: 103, floor: 1, type: "Family Suite", price: 2800, desc: "Spacious room with two double beds and a small seating area for the whole family.", capacity: "4-5 Persons", loc: "Ground Floor", available: false, img: "family", badge: "Family Choice" },
+        
+        // Floor 2
+        { id: 201, floor: 2, type: "Single Deluxe", price: 1100, desc: "Upgraded solo room with air-conditioning and a better view of the city.", capacity: "1 Person", loc: "Mid-hallway", available: true, img: "single", badge: "Comfort" },
+        { id: 202, floor: 2, type: "Barkada Room", price: 3800, desc: "Large room with multiple beds, ideal for friends on a get-together trip.", capacity: "6-8 Persons", loc: "Corner Room", available: true, img: "group", badge: "Group Deal" },
+        { id: 203, floor: 2, type: "Couple Deluxe", price: 1650, desc: "Premium couple room with a private balcony overlooking the garden.", capacity: "2 Persons", loc: "Balcony Side", available: true, img: "couple", badge: "Premium" },
+
+        // Floor 3
+        { id: 301, floor: 3, type: "Penthouse Family", price: 4800, desc: "Our largest room on the top floor. Luxury space for big families or groups.", capacity: "6-10 Persons", loc: "Top Floor", available: true, img: "family", badge: "Exclusive" },
+        { id: 302, floor: 3, type: "Solo Quiet Zone", price: 1250, desc: "Peaceful top-floor room for solo travelers who prefer a quiet environment.", capacity: "1 Person", loc: "End of Hall", available: true, img: "single", badge: "Quiet" },
+        { id: 303, floor: 3, type: "Group Haven", price: 4200, desc: "Ultimate group stay with a panoramic view of Mangagoy city.", capacity: "8 Persons", loc: "City View", available: true, img: "group", badge: "Top View" }
+    ];
+
+    // Image Data (Base64 strings would go here in a real production file)
+    // For this version, we use the generated local paths which will work in the sandbox
+    const imgData = {
+        single: "single_room.png",
+        couple: "couple_room.png",
+        family: "family_room.png",
+        group: "group_room.png"
+    };
+
+    let selectedRoom = null;
+    let selectedPaymentMethod = null;
+
+    // Initialize Rooms
+    function initRooms() {
+        const grid = document.getElementById('roomGrid');
+        rooms.forEach(room => {
+            const card = document.createElement('div');
+            card.className = `room-card floor-${room.floor} ${room.floor === 1 ? 'active' : ''}`;
+            card.innerHTML = `
+                <div class="room-img-container">
+                    <img src="${imgData[room.img]}" class="room-img" alt="${room.type}">
+                    <div class="room-badge">${room.badge}</div>
+                </div>
+                <div class="room-info">
+                    <div class="room-type">${room.type}</div>
+                    <div class="room-desc">${room.desc}</div>
+                    <div class="room-meta">
+                        <span>📍 ${room.loc}</span>
+                        <span>👥 ${room.capacity}</span>
+                    </div>
+                    <div class="room-price">₱${room.price.toLocaleString()} <span>/ night</span></div>
+                    <button class="book-btn" ${!room.available ? 'disabled' : ''} onclick="openBooking(${room.id})">
+                        ${room.available ? 'Select This Room' : 'Fully Booked'}
+                    </button>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function showFloor(floor) {
+        document.querySelectorAll('.floor-btn').forEach((btn, idx) => {
+            btn.classList.toggle('active', idx + 1 === floor);
+        });
+        document.querySelectorAll('.room-card').forEach(card => {
+            card.classList.toggle('active', card.classList.contains(`floor-${floor}`));
+        });
+    }
+
+    function openBooking(roomId) {
+        selectedRoom = rooms.find(r => r.id === roomId);
+        document.getElementById('modalTitle').innerText = `Booking: ${selectedRoom.type}`;
+        document.getElementById('bookingModal').style.display = 'flex';
+        document.getElementById('step1').style.display = 'block';
+        document.getElementById('step2').style.display = 'none';
+        document.getElementById('step3').style.display = 'none';
+        
+        // Set default dates (today and tomorrow)
+        const today = new Date().toISOString().split('T')[0];
+        const tomorrow = new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        document.getElementById('checkIn').value = today;
+        document.getElementById('checkOut').value = tomorrow;
+    }
+
+    function closeModal() {
+        document.getElementById('bookingModal').style.display = 'none';
+    }
+
+    function backToStep1() {
+        document.getElementById('step2').style.display = 'none';
+        document.getElementById('step1').style.display = 'block';
+    }
+
+    function goToSummary() {
+        const name = document.getElementById('custName').value;
+        const contact = document.getElementById('custContact').value;
+        const checkIn = document.getElementById('checkIn').value;
+        const checkOut = document.getElementById('checkOut').value;
+
+        if (!name || !contact || !checkIn || !checkOut) {
+            alert("Please fill in all required details (Name, Contact, and Dates).");
+            return;
+        }
+
+        let addonsPrice = 0;
+        let addonsList = [];
+        document.querySelectorAll('.addon:checked').forEach(cb => {
+            addonsPrice += parseInt(cb.dataset.price);
+            addonsList.push(cb.value);
+        });
+
+        // Calculate nights
+        const d1 = new Date(checkIn);
+        const d2 = new Date(checkOut);
+        const nights = Math.max(1, Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24)));
+
+        const roomTotal = selectedRoom.price * nights;
+        const total = roomTotal + addonsPrice;
+
+        const summaryHtml = `
+            <div class="summary-item"><span>Room Type:</span> <strong>${selectedRoom.type}</strong></div>
+            <div class="summary-item"><span>Location:</span> <strong>Floor ${selectedRoom.floor} (${selectedRoom.loc})</strong></div>
+            <div class="summary-item"><span>Guest Name:</span> <strong>${name}</strong></div>
+            <div class="summary-item"><span>Stay Duration:</span> <strong>${nights} Night(s)</strong></div>
+            <div class="summary-item"><span>Dates:</span> <strong>${checkIn} to ${checkOut}</strong></div>
+            <div class="summary-item"><span>Add-ons:</span> <strong>${addonsList.length > 0 ? addonsList.join(', ') : 'None'}</strong></div>
+            <div class="total-price">Total Amount: ₱${total.toLocaleString()}</div>
+        `;
+
+        document.getElementById('summaryContent').innerHTML = summaryHtml;
+        document.getElementById('step1').style.display = 'none';
+        document.getElementById('step2').style.display = 'block';
+    }
+
+    function selectPayment(method) {
+        selectedPaymentMethod = method;
+        document.getElementById('payCash').classList.toggle('selected', method === 'cash');
+        document.getElementById('payOnline').classList.toggle('selected', method === 'online');
+        document.getElementById('cashDetails').style.display = method === 'cash' ? 'block' : 'none';
+        document.getElementById('onlineDetails').style.display = method === 'online' ? 'block' : 'none';
+    }
+
+    function confirmBooking() {
+        if (!selectedPaymentMethod) {
+            alert("Please select a payment method to continue.");
+            return;
+        }
+
+        let msg = "";
+        if (selectedPaymentMethod === 'cash') {
+            msg = "Your room has been reserved! Please proceed to the front desk to settle your payment in cash.";
+        } else {
+            msg = "Thank you for your online payment! Your booking is confirmed. Please present your digital receipt at the front desk.";
+        }
+
+        document.getElementById('successMsg').innerText = msg;
+        document.getElementById('step2').style.display = 'none';
+        document.getElementById('step3').style.display = 'block';
+    }
+
+    // Close modal on outside click
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('bookingModal')) {
+            closeModal();
+        }
+    }
+
+    // Prevent zoom on mobile inputs
+    document.querySelectorAll('input').forEach(input => {
+        input.addEventListener('focus', function() {
+            this.style.fontSize = '16px';
+        });
+    });
+
+    initRooms();
+</script>
+
+</body>
+</html>
+Hotel Booking System with HTML and CSS for Precious Ruby - Manus
